@@ -32,7 +32,7 @@ from gi.repository import Gtk, Gdk, GdkPixbuf, Gio, GLib, Pango, PangoCairo
 APP_ID = "io.github.byanurag.shuttermark"
 VERSION = "0.6.2"
 DEBUG = os.environ.get("SHUTTERMARK_DEBUG") == "1"
-SIDEBAR_WIDTH = 150
+SIDEBAR_WIDTH = 138
 INK = (0.94, 0.27, 0.22, 1.0)
 HIGHLIGHT = (1.0, 0.82, 0.15, 0.42)
 TOOLS = ("Select", "Pen", "Arrow", "Rectangle", "Ellipse", "Text", "Highlight", "Pixelate")
@@ -890,6 +890,11 @@ class Shuttermark(Gtk.ApplicationWindow):
         capture = Gtk.Button(label="Capture region", icon_name="camera-photo-symbolic")
         capture.connect("clicked", self.capture)
         header.pack_start(capture)
+        self.side_btn = Gtk.ToggleButton(icon_name="sidebar-show-symbolic",
+                                         tooltip_text="Toggle sidebar (F9)",
+                                         active=True)
+        self.side_btn.connect("toggled", self._on_sidebar_toggled)
+        header.pack_start(self.side_btn)
         open_btn = Gtk.Button(icon_name="document-open-symbolic", tooltip_text="Open image")
         open_btn.connect("clicked", self.open_file)
         header.pack_start(open_btn)
@@ -918,13 +923,14 @@ class Shuttermark(Gtk.ApplicationWindow):
         header.pack_end(copy)
 
         sidebar = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        sidebar.set_margin_top(10)
-        sidebar.set_margin_bottom(10)
-        sidebar.set_margin_start(10)
-        sidebar.set_margin_end(10)
+        sidebar.set_margin_top(8)
+        sidebar.set_margin_bottom(8)
+        sidebar.set_margin_start(8)
+        sidebar.set_margin_end(8)
         side_scroll = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
         side_scroll.set_size_request(SIDEBAR_WIDTH, -1)
         side_scroll.set_child(sidebar)
+        self.side_scroll = side_scroll
         pane = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
         root.append(pane)
         pane.set_start_child(side_scroll)
@@ -967,13 +973,16 @@ class Shuttermark(Gtk.ApplicationWindow):
         self.save_dir_btn.connect("clicked", self.choose_save_dir)
         sidebar.append(self.save_dir_btn)
         self._refresh_save_button()
-        ocr = Gtk.Button(label="Find text (OCR)", icon_name="edit-find-symbolic")
+        ocr = Gtk.Button(label="Find text (OCR)", icon_name="edit-find-symbolic",
+                         tooltip_text="Find text (OCR)")
         ocr.connect("clicked", self.ocr)
         sidebar.append(ocr)
-        undo = Gtk.Button(label="Undo", icon_name="edit-undo-symbolic")
+        undo = Gtk.Button(label="Undo", icon_name="edit-undo-symbolic",
+                          tooltip_text="Undo (Ctrl+Z)")
         undo.connect("clicked", lambda *_: self.undo())
         sidebar.append(undo)
-        clear = Gtk.Button(label="Clear marks", icon_name="edit-clear-symbolic")
+        clear = Gtk.Button(label="Clear marks", icon_name="edit-clear-symbolic",
+                           tooltip_text="Clear marks")
         clear.connect("clicked", lambda *_: self.clear())
         sidebar.append(clear)
         self.watch_toggle = Gtk.CheckButton()
@@ -990,9 +999,9 @@ class Shuttermark(Gtk.ApplicationWindow):
                   "Hold Shift while drawing to start a new shape on top "
                   "of an old one. Click text (or double-click "
                   "it with Select) to edit it.\n\n"
-                  "Arrows nudge · Tab cycles · Ctrl+D duplicates · "
-                  "Ctrl+Z undo · Ctrl+S save · Ctrl+C copy · "
-                  "Ctrl+=/- zoom · Ctrl+0 fit.",
+                   "Arrows nudge · Tab cycles · Ctrl+D duplicates · "
+                   "Ctrl+Z undo · Ctrl+S save · Ctrl+C copy · "
+                   "Ctrl+=/- zoom · Ctrl+0 fit · F9 sidebar.",
             wrap=True, xalign=0)
         helptext.add_css_class("dim-label")
         sidebar.append(helptext)
@@ -1030,6 +1039,9 @@ class Shuttermark(Gtk.ApplicationWindow):
         keys.add_shortcut(Gtk.Shortcut.new(
             Gtk.ShortcutTrigger.parse_string("<Control>0"),
             Gtk.NamedAction.new("win.zoom-fit")))
+        keys.add_shortcut(Gtk.Shortcut.new(
+            Gtk.ShortcutTrigger.parse_string("F9"),
+            Gtk.NamedAction.new("win.sidebar")))
         self.add_controller(keys)
         key_events = Gtk.EventControllerKey()
         key_events.connect("key-pressed", self.on_key)
@@ -1040,13 +1052,23 @@ class Shuttermark(Gtk.ApplicationWindow):
                               ("copy", self.copy),
                               ("undo", self.undo),
                               ("duplicate", self.duplicate_selected),
-                              ("zoom-out", lambda: self.bump_zoom(1 / 1.25)),
-                              ("zoom-in", lambda: self.bump_zoom(1.25)),
-                              ("zoom-fit", self.zoom_fit)):
+                               ("zoom-out", lambda: self.bump_zoom(1 / 1.25)),
+                               ("zoom-in", lambda: self.bump_zoom(1.25)),
+                               ("zoom-fit", self.zoom_fit),
+                               ("sidebar", self.toggle_sidebar)):
             action = Gio.SimpleAction.new(name, None)
             action.connect("activate", lambda _a, _p, h=handler: h())
             actions.add_action(action)
         self.insert_action_group("win", actions)
+
+    def toggle_sidebar(self, *_args):
+        self.side_btn.set_active(not self.side_btn.get_active())
+
+    def _on_sidebar_toggled(self, _btn):
+        shown = self.side_btn.get_active()
+        self.side_scroll.set_visible(shown)
+        if shown:
+            GLib.idle_add(lambda: (self.fit_layout(), False)[1])
 
     # -- zoom ----------------------------------------------------------
     def set_zoom(self, zoom):

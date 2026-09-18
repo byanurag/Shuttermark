@@ -76,7 +76,7 @@ shuttermark
 Use **Capture region** to start. GNOME controls the selection overlay, which is
 important on Wayland. Shortcuts: `Ctrl+S` save, `Ctrl+C` copy,
 `Ctrl+Z` undo, `Ctrl+D` duplicate, `Del` delete selection,
-arrows nudge, `Tab` cycles marks, `Esc` deselect.
+arrows nudge, `Tab` cycles marks, `Esc` deselect, `F9` toggles the sidebar.
 
 Text labels use the **Text size** control, render above busy
 backgrounds with a soft shadow, and support multiple lines. Click an
