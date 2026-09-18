@@ -98,10 +98,10 @@ on by default). Whenever you take a screenshot with GNOME's own UI
 (`Print Screen`), the new `Screenshot…png` in `~/Pictures` or
 `~/Pictures/Screenshots` loads into Shuttermark by itself.
 
-You can also open images directly:
+You can also open any image directly (PNG, JPEG, or WebP):
 
 ```bash
-shuttermark ~/Pictures/Screenshots/"Screenshot From 2026-09-17 12-00-00.png"
+shuttermark ~/Pictures/example.png
 ```
 
 or right-click an image in Files → **Open With → Shuttermark**.
