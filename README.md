@@ -1,0 +1,117 @@
+# Shuttermark
+
+A focused screenshot and markup tool for current Fedora GNOME on Wayland.
+
+SPDX-License-Identifier: GPL-3.0-or-later
+
+## What it does
+
+- Captures an interactive region using GNOME Shell's Wayland-native
+  screenshot flow (`org.gnome.Shell.Screenshot`), with a
+  `gnome-screenshot -a` fallback where still available
+- Opens existing PNG/JPEG/WebP images for annotation
+- Draws freehand strokes, arrows, rectangles, ellipses, text, true
+  pixelation and translucent highlights
+- The **Select** tool (the default) moves marks by dragging the body,
+  resizes via the square handles, `Del` removes the selection,
+  `Ctrl+Z` undoes
+- Drag the square handles around a selection to resize it (text
+  scales its font size); the cursor shows the drag direction
+- Clicking an OCR highlight with Select removes just that box
+  (`Clear marks` removes everything)
+- Arrow keys nudge the selection (`Shift` for bigger steps), `Tab`
+  cycles through marks, `Ctrl+D` duplicates the selection
+- Runs local OCR with Tesseract and places word-level highlight boxes
+  over recognised text
+- Copies a rendered PNG to the clipboard (`image/png`) or exports a PNG
+- Keeps everything local; there is no upload or account
+
+## Install (Fedora)
+
+```bash
+sudo dnf install python3-gobject python3-cairo gtk4 tesseract
+```
+
+`gnome-screenshot` is only needed as a fallback on older sessions.
+`tesseract` is only needed for OCR. Install additional language packs such as
+`tesseract-langpack-deu` when required.
+
+To install the app itself:
+
+```bash
+make install PREFIX=~/.local
+```
+
+System-wide:
+
+```bash
+sudo make install
+```
+
+## Run
+
+```bash
+python3 shuttermark.py
+# or, after install:
+shuttermark
+```
+
+Use **Capture region** to start. GNOME controls the selection overlay, which is
+important on Wayland. Shortcuts: `Ctrl+S` save, `Ctrl+C` copy,
+`Ctrl+Z` undo, `Ctrl+D` duplicate, `Del` delete selection,
+arrows nudge, `Tab` cycles marks, `Esc` deselect.
+
+Text labels use the **Text size** control, render above busy
+backgrounds with a soft shadow, and support multiple lines. Click an
+existing label with the Text tool — or double-click it with Select —
+to edit it.
+
+Images open zoomed to fit so the whole screenshot is visible
+(annotations still export at full resolution). Use **+ / −** or
+`Ctrl+=` / `Ctrl+-` to zoom, the percentage label's neighbor
+**Fit** button or `Ctrl+0` to fit again.
+
+## Opening GNOME screenshots automatically
+
+Leave Shuttermark running with **Auto-open screenshots** ticked (sidebar,
+on by default). Whenever you take a screenshot with GNOME's own UI
+(`Print Screen`), the new `Screenshot…png` in `~/Pictures` or
+`~/Pictures/Screenshots` loads into Shuttermark by itself.
+
+You can also open images directly:
+
+```bash
+shuttermark ~/Pictures/Screenshots/"Screenshot From 2026-09-17 12-00-00.png"
+```
+
+or right-click an image in Files → **Open With → Shuttermark**.
+
+## Appearance
+
+The **Appearance** menu in the sidebar follows your GNOME theme by
+default (**System**). Pick **Light** or **Dark** to override it; the
+choice is remembered in `~/.config/shuttermark/settings.ini`.
+
+## Save location
+
+The **Save location** button in the sidebar shows where exports go
+(`~/Pictures` to start). Click it to pick another folder — the export
+dialog opens there next time, and whichever folder you last export to
+becomes the new default.
+
+## Notes on Wayland
+
+The app deliberately does not use `xwd`, ImageMagick display grabbing, or
+other X11 assumptions. It delegates selection/capture to the GNOME Shell
+screenshot portal (`InteractiveScreenshot`), which is integrated with the
+compositor. A small `gnome-screenshot` fallback remains for older setups.
+
+## License
+
+GPL-3.0-or-later, see `LICENSE`.
+
+## Contributing
+
+Bug reports and small pull requests welcome. Run `make check` before
+submitting. By contributing you agree your changes will be released under
+the same GPL-3.0-or-later license.

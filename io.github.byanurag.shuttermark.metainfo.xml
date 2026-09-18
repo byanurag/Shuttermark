@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.byanurag.shuttermark</id>
+  <name>Shuttermark</name>
+  <summary>Capture and clearly mark up screenshots</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <description>
+    <p>A local-first screenshot editor for GNOME on Wayland with drawing tools and OCR word highlighting.</p>
+  </description>
+  <developer>
+    <name>Shuttermark contributors</name>
+  </developer>
+  <url type="homepage">https://github.com/byanurag/shuttermark</url>
+  <url type="bugtracker">https://github.com/byanurag/shuttermark/issues</url>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="0.6.1" date="2026-09-18">
+      <description>
+        <p>Selectable, movable and resizable marks with handles, arrow-key nudging, Tab cycling and duplicating; improved multi-line text with size control.</p>
+      </description>
+    </release>
+    <release version="0.6.0" date="2026-09-18">
+      <description>
+        <p>Selectable, movable and resizable marks with handles, arrow-key nudging, Tab cycling and duplicating; improved multi-line text with size control.</p>
+      </description>
+    </release>
+    <release version="0.1.0" date="2026-09-17">
+      <description>
+        <p>Initial finished release: portal-native Wayland capture, annotation tools, true pixelation, OCR highlighting, clipboard and PNG export.</p>
+      </description>
+    </release>
+  </releases>
+  <launchable type="desktop-id">io.github.byanurag.shuttermark.desktop</launchable>
+  <provides><binary>shuttermark</binary></provides>
+  <categories><category>Graphics</category><category>Utility</category></categories>
+</component>

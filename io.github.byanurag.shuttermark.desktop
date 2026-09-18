@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=Shuttermark
+Comment=Capture and annotate screenshots
+Exec=shuttermark %F
+Icon=camera-photo
+Terminal=false
+Type=Application
+StartupNotify=true
+StartupWMClass=io.github.byanurag.shuttermark
+Categories=Graphics;
+Keywords=screenshot;capture;ocr;annotate;markup;
+MimeType=image/png;image/jpeg;image/webp;
+SingleMainWindow=true

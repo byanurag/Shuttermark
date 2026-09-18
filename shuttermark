@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Handy launcher for a checkout; package builds can install shuttermark.py directly.
+exec python3 "$(dirname "$(readlink -f "$0")")/shuttermark.py" "$@"
