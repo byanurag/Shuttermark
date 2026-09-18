@@ -2,9 +2,8 @@
 
 # Shuttermark
 
-A focused screenshot and markup tool for current Fedora GNOME on Wayland.
-
-SPDX-License-Identifier: GPL-3.0-or-later
+A focused screenshot and markup tool for GNOME on Wayland
+(Fedora, Ubuntu, Arch, and other recent GNOME setups).
 
 ## Screenshots
 
@@ -12,15 +11,17 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 ## What it does
 
-- Captures an interactive region using GNOME Shell's Wayland-native
-  screenshot flow (`org.gnome.Shell.Screenshot`), with a
+- Captures an interactive region via the desktop portal and GNOME
+  Shell's Wayland-native screenshot flow, with a
   `gnome-screenshot -a` fallback where still available
 - Opens existing PNG/JPEG/WebP images for annotation
 - Draws freehand strokes, arrows, rectangles, ellipses, text, true
   pixelation and translucent highlights
 - The **Select** tool (the default) moves marks by dragging the body,
-  resizes via the square handles, `Del` removes the selection,
-  `Ctrl+Z` undoes
+  resizes via the square handles, and deletes with `Del` or the
+  **Delete** button; `Ctrl+Z` undoes
+- Right-drag moves a mark in any tool; hold `Shift` while drawing to
+  start a new shape on top of an old one instead of moving it
 - Drag the square handles around a selection to resize it (text
   scales its font size); the cursor shows the drag direction
 - Clicking an OCR highlight with Select removes just that box
@@ -49,7 +50,9 @@ Arch:
 sudo pacman -S python-gobject python-cairo gtk4 tesseract
 ```
 
-`tesseract` is only needed for OCR. `gnome-screenshot` is only a fallback on older sessions.
+`tesseract` is only needed for OCR (add language packs such as
+`tesseract-langpack-deu` when required). `gnome-screenshot` is only a
+fallback on older sessions.
 
 To install the app itself:
 
@@ -57,7 +60,7 @@ To install the app itself:
 install -Dm755 shuttermark.py ~/.local/bin/shuttermark
 install -Dm644 io.github.byanurag.shuttermark.desktop ~/.local/share/applications/io.github.byanurag.shuttermark.desktop
 install -Dm644 io.github.byanurag.shuttermark.svg ~/.local/share/icons/hicolor/scalable/apps/io.github.byanurag.shuttermark.svg
-gtk-update-icon-cache -f ~/.local/share/icons/hicolor 2>/dev/null || true
+update-desktop-database ~/.local/share/applications 2>/dev/null || true
 ```
 
 System-wide:
@@ -87,9 +90,10 @@ existing label with the Text tool — or double-click it with Select —
 to edit it.
 
 Images open zoomed to fit so the whole screenshot is visible
-(annotations still export at full resolution). Use **+ / −** or
-`Ctrl+=` / `Ctrl+-` to zoom, the percentage label's neighbor
-**Fit** button or `Ctrl+0` to fit again.
+(annotations still export at full resolution) and stay fitted when
+you resize the window — until you zoom manually. Use **+ / −** or
+`Ctrl+=` / `Ctrl+-` to zoom, the **Fit** button or `Ctrl+0` to fit
+again.
 
 ## Opening GNOME screenshots automatically
 
@@ -122,13 +126,14 @@ becomes the new default.
 ## Notes on Wayland
 
 The app deliberately does not use `xwd`, ImageMagick display grabbing, or
-other X11 assumptions. It delegates selection/capture to the GNOME Shell
-screenshot portal (`InteractiveScreenshot`), which is integrated with the
-compositor. A small `gnome-screenshot` fallback remains for older setups.
+other X11 assumptions. It captures through the XDG screenshot portal and
+GNOME Shell's native flow (`InteractiveScreenshot`), which is integrated
+with the compositor. A small `gnome-screenshot` fallback remains for
+older setups.
 
 ## License
 
-GPL-3.0-or-later, see `LICENSE`.
+GPL-3.0-or-later (`SPDX-License-Identifier: GPL-3.0-or-later`), see `LICENSE`.
 
 ## Contributing
 
