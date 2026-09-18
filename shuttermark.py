@@ -922,18 +922,6 @@ class Shuttermark(Gtk.ApplicationWindow):
         sidebar.append(Gtk.Label(label="Color", xalign=0))
         self.color_btn = self._make_color_button()
         sidebar.append(self.color_btn)
-        sidebar.append(Gtk.Label(label="Appearance", xalign=0))
-        self.theme_model = Gtk.StringList.new(THEMES)
-        theme_dropdown = Gtk.DropDown(model=self.theme_model)
-        try:
-            theme_dropdown.set_selected(THEMES.index(load_theme_pref()))
-        except ValueError:
-            theme_dropdown.set_selected(0)
-        theme_dropdown.connect("notify::selected", self._on_theme_changed)
-        sidebar.append(theme_dropdown)
-        self.theme_dropdown = theme_dropdown
-        apply_theme(self.theme_name())
-        self._follow_system_theme()
         sidebar.append(Gtk.Label(label="Save location", xalign=0))
         self.save_dir_btn = Gtk.Button(icon_name="folder-symbolic")
         self.save_dir_btn.connect("clicked", self.choose_save_dir)
@@ -962,6 +950,18 @@ class Shuttermark(Gtk.ApplicationWindow):
         watch_label = Gtk.Label(label="Auto-open screenshots", wrap=True, xalign=0)
         self.watch_toggle.set_child(watch_label)
         sidebar.append(self.watch_toggle)
+        sidebar.append(Gtk.Label(label="Appearance", xalign=0))
+        self.theme_model = Gtk.StringList.new(THEMES)
+        theme_dropdown = Gtk.DropDown(model=self.theme_model)
+        try:
+            theme_dropdown.set_selected(THEMES.index(load_theme_pref()))
+        except ValueError:
+            theme_dropdown.set_selected(0)
+        theme_dropdown.connect("notify::selected", self._on_theme_changed)
+        sidebar.append(theme_dropdown)
+        self.theme_dropdown = theme_dropdown
+        apply_theme(self.theme_name())
+        self._follow_system_theme()
 
         # While the image is in auto-fit mode (fresh load or Fit),
         # keep it fitted when the canvas area changes (window resize,
