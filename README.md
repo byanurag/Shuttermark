@@ -56,6 +56,8 @@ To install the app itself:
 ```bash
 install -Dm755 shuttermark.py ~/.local/bin/shuttermark
 install -Dm644 io.github.byanurag.shuttermark.desktop ~/.local/share/applications/io.github.byanurag.shuttermark.desktop
+install -Dm644 io.github.byanurag.shuttermark.svg ~/.local/share/icons/hicolor/scalable/apps/io.github.byanurag.shuttermark.svg
+gtk-update-icon-cache -f ~/.local/share/icons/hicolor 2>/dev/null || true
 ```
 
 System-wide:
@@ -63,6 +65,7 @@ System-wide:
 ```bash
 sudo install -Dm755 shuttermark.py /usr/local/bin/shuttermark
 sudo install -Dm644 io.github.byanurag.shuttermark.desktop /usr/local/share/applications/io.github.byanurag.shuttermark.desktop
+sudo install -Dm644 io.github.byanurag.shuttermark.svg /usr/local/share/icons/hicolor/scalable/apps/io.github.byanurag.shuttermark.svg
 ```
 
 ## Run

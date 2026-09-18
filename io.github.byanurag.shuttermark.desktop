@@ -2,7 +2,7 @@
 Name=Shuttermark
 Comment=Capture and annotate screenshots
 Exec=shuttermark %F
-Icon=camera-photo
+Icon=io.github.byanurag.shuttermark
 Terminal=false
 Type=Application
 StartupNotify=true

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#62a0ea"/>
+      <stop offset="0.55" stop-color="#3584e4"/>
+      <stop offset="1" stop-color="#1c71d8"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#ff6b5e"/>
+      <stop offset="1" stop-color="#e01b24"/>
+    </linearGradient>
+    <clipPath id="tile">
+      <rect x="8" y="8" width="112" height="112" rx="28"/>
+    </clipPath>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="url(#bg)"/>
+  <g clip-path="url(#tile)">
+    <rect x="8" y="8" width="112" height="52" fill="#ffffff" opacity="0.10"/>
+    <rect x="8" y="108" width="112" height="12" fill="#000000" opacity="0.10"/>
+  </g>
+  <!-- screenshot corner brackets -->
+  <g fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round">
+    <path d="M37 57 V45 Q37 37 45 37 H57"/>
+    <path d="M71 37 H83 Q91 37 91 45 V57"/>
+    <path d="M91 71 V83 Q91 91 83 91 H71"/>
+    <path d="M57 91 H45 Q37 91 37 83 V71"/>
+  </g>
+  <!-- annotation arrow in Shuttermark red -->
+  <g fill="none" stroke="url(#ink)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M41 89 L78 52" stroke-width="10"/>
+    <path d="M62 42 H87 V67" stroke-width="10"/>
+  </g>
+</svg>
