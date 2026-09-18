@@ -953,16 +953,16 @@ class Shuttermark(Gtk.ApplicationWindow):
         self.watch_toggle.set_child(watch_label)
         sidebar.append(self.watch_toggle)
 
-        scroll = CanvasScroll(self._on_viewport_resized)
-        self.canvas = Canvas(self)
-        scroll.set_child(self.canvas)
-        pane.set_end_child(scroll)
-        self.scroll = scroll
         # While the image is in auto-fit mode (fresh load or Fit),
         # keep it fitted when the canvas area changes (window resize,
         # sidebar drag). Any manual zoom turns this off.
         self._auto_zoom = True
         self._refit_pending = False
+        scroll = CanvasScroll(self._on_viewport_resized)
+        self.canvas = Canvas(self)
+        scroll.set_child(self.canvas)
+        pane.set_end_child(scroll)
+        self.scroll = scroll
 
         keys = Gtk.ShortcutController()
         keys.add_shortcut(Gtk.Shortcut.new(
@@ -1046,20 +1046,17 @@ class Shuttermark(Gtk.ApplicationWindow):
         ih = self.canvas.pixbuf.get_height()
         self.set_zoom(min(vw / iw, vh / ih, 1.0))
 
-    def fit_layout(self, _retries=10):
+    def fit_layout(self):
         """Collapse the sidebar to its minimum and fit the image.
 
         Called on every image load so small screens always show as
         much of the picture as possible.
         """
-        try:
-            self.pane.set_position(SIDEBAR_WIDTH)
-        except (AttributeError, TypeError):
-            pass
-        self.zoom_fit(_retries=_retries)
+        self.pane.set_position(SIDEBAR_WIDTH)
+        self.zoom_fit()
 
     def _on_viewport_resized(self, _width, _height):
-        if not getattr(self, "_auto_zoom", False):
+        if not self._auto_zoom:
             return
         if self.canvas.pixbuf is None or self._refit_pending:
             return

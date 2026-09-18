@@ -1,3 +1,5 @@
+<img src="io.github.byanurag.shuttermark.svg" width="96" alt="Shuttermark logo"/>
+
 # Shuttermark
 
 A focused screenshot and markup tool for current Fedora GNOME on Wayland.
