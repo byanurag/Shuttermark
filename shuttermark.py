@@ -371,8 +371,10 @@ class Canvas(Gtk.DrawingArea):
         self._move_grab = None
         self._resize_grab = None
         self.queue_draw()
-        # Collapse the sidebar and shrink-to-fit once laid out so whole
-        # screenshots are visible even on small screens.
+        # Fit immediately when the viewport already has a size (repeat
+        # loads) so no full-size frame flashes; the idle pass covers
+        # first show while the window is still laying out.
+        self.window.fit_layout()
         GLib.idle_add(lambda: (self.window.fit_layout(), False)[1])
 
     def image_coords(self, x, y):
@@ -838,6 +840,7 @@ class Shuttermark(Gtk.ApplicationWindow):
         self._monitors = []
         self._pending_watch = {}
         self._ignored_outputs = {}
+        self._capturing = False
         self.build()
         self._start_watching()
 
@@ -1146,6 +1149,8 @@ class Shuttermark(Gtk.ApplicationWindow):
     def _on_watch_event(self, _mon, gfile, _other, event):
         if not self.watch_toggle.get_active():
             return
+        if self._capturing:
+            return
         try:
             wanted = {int(getattr(Gio.FileMonitorEvent, n)) for n in WATCH_EVENTS}
         except (TypeError, AttributeError):
@@ -1165,6 +1170,9 @@ class Shuttermark(Gtk.ApplicationWindow):
         self._pending_watch.pop(path, None)
         if not self.watch_toggle.get_active():
             return False
+        if self._capturing:
+            # A capture is in progress and loads its file itself.
+            return False
         if time.monotonic() < self._ignored_outputs.get(path, 0):
             return False
         try:
@@ -1175,14 +1183,16 @@ class Shuttermark(Gtk.ApplicationWindow):
             return False
         try:
             if self.load_path(path, "Opened screenshot"):
-                self.present()
+                if not self.is_active():
+                    self.present()
         except GLib.Error:
             pass
         return False
 
     def _note_output(self, path):
-        # Ignore our own exports in the watcher for a while so saving an
-        # annotated "Screenshot-*.png" doesn't reload itself.
+        # Ignore our own exports — and captures we've already loaded —
+        # in the watcher for a while so saving an annotated
+        # "Screenshot-*.png" doesn't reload itself.
         self._ignored_outputs[path] = time.monotonic() + 30
 
     def on_key(self, _controller, keyval, _keycode, state):
@@ -1292,12 +1302,23 @@ class Shuttermark(Gtk.ApplicationWindow):
     # -- capture -------------------------------------------------------
     def capture(self, *_):
         self.set_status("Select an area in GNOME…")
+        # Flag the blocking portal/Shell calls below: their file events
+        # must not trigger a second watcher load of the same capture.
+        self._capturing = True
+        try:
+            self._do_capture()
+        finally:
+            self._capturing = False
+
+    def _do_capture(self):
         path, cancelled = self.capture_via_portal(interactive=True)
         if path:
             try:
                 self.canvas.load(path)
                 # Portal/Shell save into ~/Pictures; keep the user's file,
                 # only remove our own temp copies (gnome-screenshot below).
+                # Already loaded: keep the watcher from loading it again.
+                self._note_output(path)
                 self.set_status("Captured — draw or run OCR")
                 return
             except GLib.Error as exc:
@@ -1310,6 +1331,7 @@ class Shuttermark(Gtk.ApplicationWindow):
         if path:
             try:
                 self.canvas.load(path)
+                self._note_output(path)
                 self.set_status("Captured — draw or run OCR")
                 return
             except GLib.Error as exc:
