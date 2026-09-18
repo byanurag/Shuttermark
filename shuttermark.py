@@ -849,6 +849,9 @@ class Shuttermark(Gtk.ApplicationWindow):
         root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.set_child(root)
         header = Gtk.HeaderBar()
+        # The system titlebar already has window controls; don't duplicate
+        # its close button at the end of our in-content header.
+        header.set_show_title_buttons(False)
         root.append(header)
         capture = Gtk.Button(label="Capture region", icon_name="camera-photo-symbolic")
         capture.connect("clicked", self.capture)
@@ -944,11 +947,8 @@ class Shuttermark(Gtk.ApplicationWindow):
                           tooltip_text="Undo (Ctrl+Z)")
         undo.connect("clicked", lambda *_: self.undo())
         sidebar.append(undo)
-        delete_box = Gtk.Box(spacing=6)
-        delete_box.append(Gtk.Image.new_from_icon_name("edit-delete-symbolic"))
-        delete_box.append(Gtk.Label(label="Delete"))
-        delete = Gtk.Button(tooltip_text="Delete selection (Del)")
-        delete.set_child(delete_box)
+        delete = Gtk.Button(label="Delete",
+                            tooltip_text="Delete selection (Del)")
         delete.connect("clicked", lambda *_: self.delete_selected())
         sidebar.append(delete)
         clear = Gtk.Button(label="Clear marks", icon_name="edit-clear-symbolic",
