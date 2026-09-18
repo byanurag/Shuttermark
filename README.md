@@ -26,26 +26,37 @@ SPDX-License-Identifier: GPL-3.0-or-later
 - Copies a rendered PNG to the clipboard (`image/png`) or exports a PNG
 - Keeps everything local; there is no upload or account
 
-## Install (Fedora)
+## Install
 
+Fedora:
 ```bash
 sudo dnf install python3-gobject python3-cairo gtk4 tesseract
 ```
 
-`gnome-screenshot` is only needed as a fallback on older sessions.
-`tesseract` is only needed for OCR. Install additional language packs such as
-`tesseract-langpack-deu` when required.
+Ubuntu / Debian:
+```bash
+sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0 python3-cairo tesseract-ocr
+```
+
+Arch:
+```bash
+sudo pacman -S python-gobject python-cairo gtk4 tesseract
+```
+
+`tesseract` is only needed for OCR. `gnome-screenshot` is only a fallback on older sessions.
 
 To install the app itself:
 
 ```bash
-make install PREFIX=~/.local
+install -Dm755 shuttermark.py ~/.local/bin/shuttermark
+install -Dm644 io.github.byanurag.shuttermark.desktop ~/.local/share/applications/io.github.byanurag.shuttermark.desktop
 ```
 
 System-wide:
 
 ```bash
-sudo make install
+sudo install -Dm755 shuttermark.py /usr/local/bin/shuttermark
+sudo install -Dm644 io.github.byanurag.shuttermark.desktop /usr/local/share/applications/io.github.byanurag.shuttermark.desktop
 ```
 
 ## Run
@@ -112,6 +123,7 @@ GPL-3.0-or-later, see `LICENSE`.
 
 ## Contributing
 
-Bug reports and small pull requests welcome. Run `make check` before
-submitting. By contributing you agree your changes will be released under
+Bug reports and small pull requests welcome. Check with
+`python3 -m py_compile shuttermark.py` before submitting. By
+contributing you agree your changes will be released under
 the same GPL-3.0-or-later license.
