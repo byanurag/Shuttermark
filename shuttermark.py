@@ -944,8 +944,11 @@ class Shuttermark(Gtk.ApplicationWindow):
                           tooltip_text="Undo (Ctrl+Z)")
         undo.connect("clicked", lambda *_: self.undo())
         sidebar.append(undo)
-        delete = Gtk.Button(label="Delete", icon_name="edit-delete-symbolic",
-                            tooltip_text="Delete selection (Del)")
+        delete_box = Gtk.Box(spacing=6)
+        delete_box.append(Gtk.Image.new_from_icon_name("edit-delete-symbolic"))
+        delete_box.append(Gtk.Label(label="Delete"))
+        delete = Gtk.Button(tooltip_text="Delete selection (Del)")
+        delete.set_child(delete_box)
         delete.connect("clicked", lambda *_: self.delete_selected())
         sidebar.append(delete)
         clear = Gtk.Button(label="Clear marks", icon_name="edit-clear-symbolic",
