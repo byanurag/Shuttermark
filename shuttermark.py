@@ -30,7 +30,7 @@ from gi.repository import Gtk, Gdk, GdkPixbuf, Gio, GLib, Pango, PangoCairo
 
 
 APP_ID = "io.github.byanurag.shuttermark"
-VERSION = "0.6.3"
+VERSION = "0.6.4"
 DEBUG = os.environ.get("SHUTTERMARK_DEBUG") == "1"
 SIDEBAR_WIDTH = 138
 INK = (1.0, 1.0, 1.0, 1.0)  # default mark color: white
@@ -340,6 +340,8 @@ class Canvas(Gtk.DrawingArea):
         self._resize_grab = None
         self._hover_cursor = None
         self.zoom = 1.0
+        self._view_w = 0
+        self._view_h = 0
         self.set_content_width(900)
         self.set_content_height(560)
         self.set_draw_func(self.draw)
@@ -379,7 +381,23 @@ class Canvas(Gtk.DrawingArea):
 
     def image_coords(self, x, y):
         z = self.zoom or 1.0
-        return (x / z, y / z)
+        ox, oy = self._origin()
+        return ((x - ox) / z, (y - oy) / z)
+
+    def _origin(self):
+        """Top-left of the image in widget pixels.
+
+        Centers the picture when it is smaller than the viewport so
+        leftover space splits evenly instead of piling up on the
+        right/bottom; (0, 0) once it overflows and scrolls.
+        """
+        if not self.pixbuf:
+            return (0.0, 0.0)
+        z = self.zoom or 1.0
+        iw = self.pixbuf.get_width() * z
+        ih = self.pixbuf.get_height() * z
+        return (max(0.0, (self._view_w - iw) / 2.0),
+                max(0.0, (self._view_h - ih) / 2.0))
 
     def tool(self):
         return self.window.tool_name()
@@ -790,6 +808,7 @@ class Canvas(Gtk.DrawingArea):
             cr.show_text(" ".join(str(text).split()))
 
     def draw(self, area, cr, width, height):
+        self._view_w, self._view_h = width, height
         cr.set_source_rgb(.11, .12, .14)
         cr.paint()
         if not self.pixbuf:
@@ -801,6 +820,8 @@ class Canvas(Gtk.DrawingArea):
             cr.show_text("Capture or open an image to start annotating")
             return
         cr.save()
+        ox, oy = self._origin()
+        cr.translate(ox, oy)
         cr.scale(self.zoom, self.zoom)
         Gdk.cairo_set_source_pixbuf(cr, self.pixbuf, 0, 0)
         cr.paint()
