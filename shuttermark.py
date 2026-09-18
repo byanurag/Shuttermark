@@ -30,7 +30,7 @@ from gi.repository import Gtk, Gdk, GdkPixbuf, Gio, GLib, Pango, PangoCairo
 
 
 APP_ID = "io.github.byanurag.shuttermark"
-VERSION = "0.6.2"
+VERSION = "0.6.3"
 DEBUG = os.environ.get("SHUTTERMARK_DEBUG") == "1"
 SIDEBAR_WIDTH = 138
 INK = (0.94, 0.27, 0.22, 1.0)
@@ -160,7 +160,10 @@ def mark_bbox(mark):
         return (x, y, w, size * 1.35 * len(lines))
     xs = [p[0] for p in mark.points]
     ys = [p[1] for p in mark.points]
-    pad = mark.width / 2.0 + 4.0
+    if mark.kind == "Arrow":
+        pad = mark.width * 3.0 + 4.0  # arrowhead extends past the tip
+    else:
+        pad = mark.width / 2.0 + 4.0
     x1, y1 = min(xs) - pad, min(ys) - pad
     x2, y2 = max(xs) + pad, max(ys) + pad
     return (x1, y1, x2 - x1, y2 - y1)
@@ -177,8 +180,8 @@ def point_segment_distance(px, py, ax, ay, bx, by):
 def mark_hit_test(mark, x, y):
     if not mark.points:
         return False
-    tol = mark.width / 2.0 + 12.0
-    if mark.kind in ("Pen", "Arrow"):
+    if mark.kind == "Pen":
+        tol = mark.width / 2.0 + 12.0
         pts = mark.points
         if len(pts) == 1:
             return math.hypot(x - pts[0][0], y - pts[0][1]) <= tol
@@ -186,6 +189,8 @@ def mark_hit_test(mark, x, y):
             point_segment_distance(x, y, ax, ay, bx, by) <= tol
             for (ax, ay), (bx, by) in zip(pts, pts[1:])
         )
+    # Everything else (shapes, arrows, text) grabs by its selection box,
+    # so right/left-drag anywhere inside the dashed outline moves it.
     box = mark_bbox(mark)
     if box is None:
         return False
@@ -237,23 +242,6 @@ def handle_at(box, px, py, r=HANDLE_R):
         if abs(px - hx) <= r and abs(py - hy) <= r:
             return name
     return None
-
-
-def near_box_edge(box, px, py, tol=EDGE_TOL):
-    """True when (px, py) is on/near the bbox border.
-
-    Used so a drawing tool can pick up an existing mark by grabbing its
-    selection outline without hijacking clicks in its interior (which
-    should still start a new drawing). `tol` is fat on purpose so the
-    outline is easy to grab.
-    """
-    if box is None:
-        return False
-    bx, by, bw, bh = box
-    if not (bx - tol <= px <= bx + bw + tol and by - tol <= py <= by + bh + tol):
-        return False
-    return (abs(px - bx) <= tol or abs(px - (bx + bw)) <= tol
-            or abs(py - by) <= tol or abs(py - (by + bh)) <= tol)
 
 
 def resized_bbox(box, handle, dx, dy, min_size=10):
@@ -421,9 +409,6 @@ class Canvas(Gtk.DrawingArea):
     def _handle_radius(self):
         return HANDLE_R / (self.zoom or 1.0)
 
-    def _edge_tolerance(self):
-        return EDGE_TOL / (self.zoom or 1.0)
-
     def _pen_tolerance(self):
         # Fat screen-constant grab for ink so thin strokes are easy to
         # pick up even when zoomed to fit.
@@ -473,31 +458,6 @@ class Canvas(Gtk.DrawingArea):
         for mark in reversed(self.marks):
             if mark_hit_test(mark, x, y):
                 return mark
-        return None
-
-    def _grab_hit_for_draw(self, x, y):
-        """Topmost mark a drawing tool should pick up instead of drawing.
-
-        Border grabs work for every kind (so the selection outline is
-        always draggable); Pen/Arrow strokes and Text also grab on their
-        precise hit so clicking the ink itself picks it up. Interiors of
-        hollow/filled shapes intentionally do NOT hit here so you can
-        still start a new drawing inside them.
-        """
-        tol = self._edge_tolerance()
-        pen_extra = self._pen_tolerance()
-        for mark in reversed(self.marks):
-            box = mark_bbox(mark)
-            if box is None:
-                continue
-            if near_box_edge(box, x, y, tol=tol):
-                return mark
-            if mark.kind in ("Pen", "Arrow"):
-                if pen_grab_hit(mark, x, y, pen_extra):
-                    return mark
-            elif mark.kind == "Text":
-                if mark_hit_test(mark, x, y):
-                    return mark
         return None
 
     # -- input ---------------------------------------------------------
@@ -992,19 +952,6 @@ class Shuttermark(Gtk.ApplicationWindow):
         watch_label = Gtk.Label(label="Auto-open screenshots", wrap=True, xalign=0)
         self.watch_toggle.set_child(watch_label)
         sidebar.append(self.watch_toggle)
-        sidebar.append(Gtk.Separator())
-        helptext = Gtk.Label(
-            label="Drag inside a mark to move it (any tool, either "
-                  "button), drag a handle to resize, Del deletes.\n\n"
-                  "Hold Shift while drawing to start a new shape on top "
-                  "of an old one. Click text (or double-click "
-                  "it with Select) to edit it.\n\n"
-                   "Arrows nudge · Tab cycles · Ctrl+D duplicates · "
-                   "Ctrl+Z undo · Ctrl+S save · Ctrl+C copy · "
-                   "Ctrl+=/- zoom · Ctrl+0 fit · F9 sidebar.",
-            wrap=True, xalign=0)
-        helptext.add_css_class("dim-label")
-        sidebar.append(helptext)
 
         scroll = CanvasScroll(self._on_viewport_resized)
         self.canvas = Canvas(self)
