@@ -33,7 +33,7 @@ APP_ID = "io.github.byanurag.shuttermark"
 VERSION = "0.6.3"
 DEBUG = os.environ.get("SHUTTERMARK_DEBUG") == "1"
 SIDEBAR_WIDTH = 138
-INK = (0.94, 0.27, 0.22, 1.0)
+INK = (1.0, 1.0, 1.0, 1.0)  # default mark color: white
 HIGHLIGHT = (1.0, 0.82, 0.15, 0.42)
 TOOLS = ("Select", "Pen", "Arrow", "Rectangle", "Ellipse", "Text", "Highlight", "Pixelate")
 THEMES = ("System", "Light", "Dark")
@@ -1075,7 +1075,7 @@ class Shuttermark(Gtk.ApplicationWindow):
 
     def _make_color_button(self):
         rgba = Gdk.RGBA()
-        rgba.parse("rgb(240,69,56)")
+        rgba.parse("rgb(255,255,255)")
         if hasattr(Gtk, "ColorDialogButton"):
             dialog = Gtk.ColorDialog()
             dialog.set_with_alpha(True)
