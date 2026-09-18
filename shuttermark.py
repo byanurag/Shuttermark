@@ -30,8 +30,9 @@ from gi.repository import Gtk, Gdk, GdkPixbuf, Gio, GLib, Pango, PangoCairo
 
 
 APP_ID = "io.github.byanurag.shuttermark"
-VERSION = "0.6.1"
+VERSION = "0.6.2"
 DEBUG = os.environ.get("SHUTTERMARK_DEBUG") == "1"
+SIDEBAR_WIDTH = 150
 INK = (0.94, 0.27, 0.22, 1.0)
 HIGHLIGHT = (1.0, 0.82, 0.15, 0.42)
 TOOLS = ("Select", "Pen", "Arrow", "Rectangle", "Ellipse", "Text", "Highlight", "Pixelate")
@@ -324,6 +325,20 @@ def paint_pixelated_pixbuf(cr, pixbuf, x, y, w, h, block=PIXEL_BLOCK):
     cr.fill()
 
 
+class CanvasScroll(Gtk.ScrolledWindow):
+    """ScrolledWindow that reports viewport resizes (GTK4 has no
+    size-allocate signal, so we hook the allocator instead)."""
+
+    def __init__(self, on_resize):
+        super().__init__(hexpand=True, vexpand=True)
+        self._on_resize = on_resize
+
+    def do_size_allocate(self, width, height, baseline):
+        Gtk.ScrolledWindow.do_size_allocate(self, width, height, baseline)
+        if self._on_resize is not None:
+            self._on_resize(width, height)
+
+
 class Canvas(Gtk.DrawingArea):
     def __init__(self, window):
         super().__init__()
@@ -368,8 +383,9 @@ class Canvas(Gtk.DrawingArea):
         self._move_grab = None
         self._resize_grab = None
         self.queue_draw()
-        # Shrink-to-fit once laid out so whole screenshots are visible.
-        GLib.idle_add(lambda: (self.window.zoom_fit(), False)[1])
+        # Collapse the sidebar and shrink-to-fit once laid out so whole
+        # screenshots are visible even on small screens.
+        GLib.idle_add(lambda: (self.window.fit_layout(), False)[1])
 
     def image_coords(self, x, y):
         z = self.zoom or 1.0
@@ -907,11 +923,16 @@ class Shuttermark(Gtk.ApplicationWindow):
         sidebar.set_margin_start(10)
         sidebar.set_margin_end(10)
         side_scroll = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
-        side_scroll.set_size_request(168, -1)
+        side_scroll.set_size_request(SIDEBAR_WIDTH, -1)
         side_scroll.set_child(sidebar)
         pane = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
         root.append(pane)
         pane.set_start_child(side_scroll)
+        # Keep the sidebar at its minimum: extra window space always
+        # goes to the canvas, and the divider can't squeeze it further.
+        pane.set_shrink_start_child(False)
+        pane.set_resize_start_child(False)
+        self.pane = pane
         self.tool_model = Gtk.StringList.new(TOOLS)
         dropdown = Gtk.DropDown(model=self.tool_model)
         dropdown.set_selected(0)  # Select: marks are movable from the start
@@ -976,11 +997,16 @@ class Shuttermark(Gtk.ApplicationWindow):
         helptext.add_css_class("dim-label")
         sidebar.append(helptext)
 
-        scroll = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
+        scroll = CanvasScroll(self._on_viewport_resized)
         self.canvas = Canvas(self)
         scroll.set_child(self.canvas)
         pane.set_end_child(scroll)
         self.scroll = scroll
+        # While the image is in auto-fit mode (fresh load or Fit),
+        # keep it fitted when the canvas area changes (window resize,
+        # sidebar drag). Any manual zoom turns this off.
+        self._auto_zoom = True
+        self._refit_pending = False
 
         keys = Gtk.ShortcutController()
         keys.add_shortcut(Gtk.Shortcut.new(
@@ -1036,9 +1062,11 @@ class Shuttermark(Gtk.ApplicationWindow):
         self.canvas.queue_draw()
 
     def bump_zoom(self, factor):
+        self._auto_zoom = False
         self.set_zoom(self.canvas.zoom * factor)
 
-    def zoom_fit(self, _retries=5):
+    def zoom_fit(self, _retries=10):
+        self._auto_zoom = True
         if not self.canvas.pixbuf:
             return
         vw, vh = self.scroll.get_width() - 24, self.scroll.get_height() - 24
@@ -1048,6 +1076,33 @@ class Shuttermark(Gtk.ApplicationWindow):
         iw = self.canvas.pixbuf.get_width()
         ih = self.canvas.pixbuf.get_height()
         self.set_zoom(min(vw / iw, vh / ih, 1.0))
+
+    def fit_layout(self, _retries=10):
+        """Collapse the sidebar to its minimum and fit the image.
+
+        Called on every image load so small screens always show as
+        much of the picture as possible.
+        """
+        try:
+            self.pane.set_position(SIDEBAR_WIDTH)
+        except (AttributeError, TypeError):
+            pass
+        self.zoom_fit(_retries=_retries)
+
+    def _on_viewport_resized(self, _width, _height):
+        if not getattr(self, "_auto_zoom", False):
+            return
+        if self.canvas.pixbuf is None or self._refit_pending:
+            return
+        self._refit_pending = True
+
+        def _do():
+            self._refit_pending = False
+            if self._auto_zoom and self.canvas.pixbuf is not None:
+                self.zoom_fit()
+            return False
+
+        GLib.idle_add(_do)
 
     def _make_color_button(self):
         rgba = Gdk.RGBA()
