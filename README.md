@@ -71,6 +71,19 @@ sudo install -Dm644 io.github.byanurag.shuttermark.desktop /usr/local/share/appl
 sudo install -Dm644 io.github.byanurag.shuttermark.svg /usr/local/share/icons/hicolor/scalable/apps/io.github.byanurag.shuttermark.svg
 ```
 
+Or grab the AppImage from the
+[Releases](https://github.com/byanurag/shuttermark/releases) page —
+no install needed, just run it:
+
+```bash
+chmod +x Shuttermark-x86_64.AppImage
+./Shuttermark-x86_64.AppImage
+```
+
+(The AppImage bundles Python and GTK; only OCR needs a host
+`tesseract` install. Built on a recent Fedora, so it needs a
+recent distro — see the release notes.)
+
 ## Run
 
 ```bash

@@ -16,3 +16,4 @@ venv/
 /build/
 /dist/
 *.tmp.png
+*.AppImage
