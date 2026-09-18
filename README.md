@@ -8,8 +8,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 ![Shuttermark window](screenshots/window.png)
 
-![Annotated export](screenshots/annotated.png)
-
 ## What it does
 
 - Captures an interactive region using GNOME Shell's Wayland-native
