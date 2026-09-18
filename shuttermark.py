@@ -857,7 +857,7 @@ class Shuttermark(Gtk.ApplicationWindow):
     def __init__(self, app):
         super().__init__(application=app, title="Shuttermark")
         self.set_default_size(1120, 720)
-        self.set_icon_name(APP_ID)
+        self.set_icon_name("shuttermark")
         self._monitors = []
         self._pending_watch = {}
         self._ignored_outputs = {}
