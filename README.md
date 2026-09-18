@@ -4,6 +4,12 @@ A focused screenshot and markup tool for current Fedora GNOME on Wayland.
 
 SPDX-License-Identifier: GPL-3.0-or-later
 
+## Screenshots
+
+![Shuttermark window](screenshots/window.png)
+
+![Annotated export](screenshots/annotated.png)
+
 ## What it does
 
 - Captures an interactive region using GNOME Shell's Wayland-native
