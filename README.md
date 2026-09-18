@@ -95,12 +95,6 @@ you resize the window — until you zoom manually. Use **+ / −** or
 `Ctrl+=` / `Ctrl+-` to zoom, the **Fit** button or `Ctrl+0` to fit
 again.
 
-## Opening GNOME screenshots automatically
-
-Leave Shuttermark running with **Auto-open screenshots** ticked (sidebar,
-on by default). Whenever you take a screenshot with GNOME's own UI
-(`Print Screen`), the new `Screenshot…png` in `~/Pictures` or
-`~/Pictures/Screenshots` loads into Shuttermark by itself.
 
 You can also open any image directly (PNG, JPEG, or WebP):
 
