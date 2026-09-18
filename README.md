@@ -73,9 +73,7 @@ sudo install -Dm644 io.github.byanurag.shuttermark.svg /usr/local/share/icons/hi
 
 ## Run
 
-```bash
-python3 shuttermark.py
-# or, after install:
+```bass
 shuttermark
 ```
 
